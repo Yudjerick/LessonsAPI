@@ -1,0 +1,36 @@
+version: '3.4'
+
+services:
+  lessonsapi:
+    image: ${DOCKER_REGISTRY-}lessonsapi
+    build:
+      context: .
+      dockerfile: LessonsAPI/Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - ConnectionStrings__LessonsAPI=User ID=postgres;Password=postgres;Server=postgres-db;Port=5432;Database=Lessons; IntegratedSecurity=true;Pooling=true;
+      - ASPNETCORE_URLS=http://+:80
+    networks:
+      - lessons-dev
+    depends_on: 
+      - postgres-db
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=Lessons
+    restart: always
+    ports:
+      - "5432:5432"
+    networks: 
+      - lessons-dev
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:
+networks:
+  lessons-dev:
+    driver: bridge
