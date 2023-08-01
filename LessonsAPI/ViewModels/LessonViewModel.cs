@@ -27,7 +27,6 @@ namespace LessonsAPI.ViewModels
             lessonViewModel.Title = lesson.Title;
             lessonViewModel.Topic = lesson.Topic;
             lessonViewModel.Description = lesson.Description;
-            lessonViewModel.IsCompleted = lesson.IsCompleted;
             lessonViewModel.Tasks = lesson.Tasks.Select(x => TaskViewModel.ToViewModel(x)).ToList();
 
             lessonViewModel.AuthorId = lesson.Author.Id;
@@ -41,7 +40,6 @@ namespace LessonsAPI.ViewModels
             lesson.Title = lessonViewModel.Title;
             lesson.Topic = lessonViewModel.Topic;
             lesson.Tasks = lessonViewModel.Tasks.Select(x => TaskViewModel.ToModel(x)).ToList();
-            lesson.IsCompleted = lessonViewModel.IsCompleted;
             try
             {
                 lesson.Author = context.Authors.First(x => x.Id == lessonViewModel.AuthorId);

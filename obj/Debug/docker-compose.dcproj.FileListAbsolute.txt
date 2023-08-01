@@ -20,3 +20,11 @@ C:\Users\Petrenko Denis\source\repos\LessonsAPI\obj\Debug\docker-compose.dcproj.
 C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Microsoft.IdentityModel.Logging.dll
 C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Microsoft.OpenApi.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Swashbuckle.AspNetCore.Filters.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\BCrypt.Net-Next.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Swashbuckle.AspNetCore.Filters.Abstractions.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\bin\Debug\Scrutor.dll

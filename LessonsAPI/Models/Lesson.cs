@@ -12,10 +12,10 @@ namespace LessonsAPI.Models
        
         public string? Topic { get; set; }
 
-        public bool IsCompleted { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? MofidiedAt { get; set; }
 
         public Author Author { get; set; }
-
 
         public List<Task> Tasks { get; set; }
     }

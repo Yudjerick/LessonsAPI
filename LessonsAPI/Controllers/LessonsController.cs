@@ -9,6 +9,10 @@ using LessonsAPI.Data;
 using LessonsAPI.Models;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using LessonsAPI.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Diagnostics;
 
 namespace LessonsAPI.Controllers
 {
@@ -57,14 +61,28 @@ namespace LessonsAPI.Controllers
 
         // PUT: api/Lessons/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutLesson(long id, Lesson lesson)
+        [HttpPut("{id}"), Authorize]
+        public async Task<IActionResult> PutLesson(long id, LessonViewModel lessonViewModel)
         {
-            if (id != lesson.Id)
+            Lesson lesson;
+            try
             {
-                return BadRequest();
+                lesson = LessonViewModel.ToModel(lessonViewModel, _context);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
+            Request.Headers.TryGetValue("Authorization", out var token);
+            token = token.ToString().Split(' ')[0];
+            var username = GetRequestHeaderUsername();
+            if (lesson.Author.Username != username)
+            {
+                return BadRequest("Try to modify lesson that does not belong to authorized person");
+            }
+
+            lesson.MofidiedAt = DateTime.UtcNow;
             _context.Entry(lesson).State = EntityState.Modified;
 
             try
@@ -88,12 +106,12 @@ namespace LessonsAPI.Controllers
 
         // POST: api/Lessons
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost, Authorize]
         public async Task<ActionResult<Lesson>> PostLesson(LessonViewModel lessonViewModel)
         {
             if (_context.Lessons == null)
             {
-                return Problem("Entity set 'LessonsAPIContext.Lesson'  is null.");
+                return Problem("Entity set 'LessonsAPIContext.Lesson' is null.");
             }
 
             Lesson lesson;
@@ -106,6 +124,8 @@ namespace LessonsAPI.Controllers
                 return Problem(ex.Message);
             }
 
+            lesson.CreatedAt = DateTime.UtcNow;
+            lesson.MofidiedAt = DateTime.UtcNow;
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
 
@@ -113,7 +133,7 @@ namespace LessonsAPI.Controllers
         }
 
         // DELETE: api/Lessons/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize]
         public async Task<IActionResult> DeleteLesson(long id)
         {
             if (_context.Lessons == null)
@@ -121,9 +141,15 @@ namespace LessonsAPI.Controllers
                 return NotFound();
             }
             var lesson = await _context.Lessons.FindAsync(id);
+            _context.Entry(lesson).Reference(x => x.Author).Load();
             if (lesson == null)
             {
                 return NotFound();
+            }
+            var username = GetRequestHeaderUsername();
+            if (lesson.Author.Username != username)
+            {
+                return BadRequest("Try to delete lesson that does not belong to authorized person");
             }
 
             _context.Lessons.Remove(lesson);
@@ -135,6 +161,16 @@ namespace LessonsAPI.Controllers
         private bool LessonExists(long id)
         {
             return (_context.Lessons?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private string GetRequestHeaderUsername()
+        {
+            Request.Headers.TryGetValue("Authorization", out var token);
+            
+            token = token.ToString().Split(' ')[1];
+            Console.WriteLine(token);
+            return new JwtSecurityTokenHandler().ReadJwtToken(token)
+                .Claims.First(c => c.Type == ClaimTypes.Name).Value;
         }
     }
 }

@@ -256,3 +256,7 @@ C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\obj\Debug\net7.0\ref\
 C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\Npgsql.dll
 C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\BCrypt.Net-Next.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\Scrutor.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.dll
+C:\Users\Petrenko Denis\source\repos\LessonsAPI\LessonsAPI\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
