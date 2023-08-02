@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Diagnostics;
+using LessonsAPI.RequestObjects;
 
 namespace LessonsAPI.Controllers
 {
@@ -60,69 +61,76 @@ namespace LessonsAPI.Controllers
         }
 
         // PUT: api/Lessons/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}"), Authorize]
-        public async Task<IActionResult> PutLesson(long id, LessonViewModel lessonViewModel)
+        public async Task<IActionResult> PutLesson(long id, LessonRequestObject requestObject)
         {
-            Lesson lesson;
-            try
-            {
-                lesson = LessonViewModel.ToModel(lessonViewModel, _context);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            Request.Headers.TryGetValue("Authorization", out var token);
-            token = token.ToString().Split(' ')[0];
             var username = GetRequestHeaderUsername();
-            if (lesson.Author.Username != username)
+            var author = _context.Authors.FirstOrDefault(x => x.Username == username);
+            if (author == null)
+            {
+                return BadRequest("Authorized person does not exist");
+            }
+            _context.Entry(author).Collection(x => x.Lesons).Load();
+
+            if (!author.Lesons.Select(x => x.Id).Any(y => y == id))
             {
                 return BadRequest("Try to modify lesson that does not belong to authorized person");
             }
 
-            lesson.MofidiedAt = DateTime.UtcNow;
-            _context.Entry(lesson).State = EntityState.Modified;
-
-            try
+            var modifiedLesson = LessonRequestObject.ToModel(requestObject, author, id);
+            Lesson? lesson = _context.Lessons.FirstOrDefault(x => x.Id == id);
+            if(lesson != null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!LessonExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                _context.Entry(lesson).Collection(x => x.Tasks).Load();
+                lesson.Author = modifiedLesson.Author;
+                lesson.Title = modifiedLesson.Title;
+                lesson.Topic = modifiedLesson.Topic;
+                lesson.Description = modifiedLesson.Description;
 
-            return NoContent();
+                _context.Tasks.RemoveRange(lesson.Tasks.ToArray());
+                lesson.Tasks = modifiedLesson.Tasks;
+
+                lesson.MofidiedAt = DateTime.UtcNow;
+                _context.Entry(lesson).State = EntityState.Modified;
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!LessonExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return Ok(LessonViewModel.ToViewModel(lesson));
+            }
+            return NotFound();
+           
         }
 
         // POST: api/Lessons
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost, Authorize]
-        public async Task<ActionResult<Lesson>> PostLesson(LessonViewModel lessonViewModel)
+        public async Task<ActionResult<Lesson>> PostLesson(LessonRequestObject requestObject)
         {
             if (_context.Lessons == null)
             {
                 return Problem("Entity set 'LessonsAPIContext.Lesson' is null.");
             }
 
+            var username = GetRequestHeaderUsername();
+            var author = _context.Authors.FirstOrDefault(x => x.Username == username);
+            if (author == null)
+            {
+                return BadRequest("Authorized person does not exist");
+            }
+
             Lesson lesson;
-            try
-            {
-                lesson = LessonViewModel.ToModel(lessonViewModel, _context);
-            }
-            catch(Exception ex)
-            {
-                return Problem(ex.Message);
-            }
+            lesson = LessonRequestObject.ToModel(requestObject, author, 0);
 
             lesson.CreatedAt = DateTime.UtcNow;
             lesson.MofidiedAt = DateTime.UtcNow;
@@ -136,22 +144,24 @@ namespace LessonsAPI.Controllers
         [HttpDelete("{id}"), Authorize]
         public async Task<IActionResult> DeleteLesson(long id)
         {
-            if (_context.Lessons == null)
-            {
-                return NotFound();
-            }
-            var lesson = await _context.Lessons.FindAsync(id);
-            _context.Entry(lesson).Reference(x => x.Author).Load();
-            if (lesson == null)
-            {
-                return NotFound();
-            }
             var username = GetRequestHeaderUsername();
-            if (lesson.Author.Username != username)
+            var author = _context.Authors.FirstOrDefault(x => x.Username == username);
+            if (author == null)
             {
-                return BadRequest("Try to delete lesson that does not belong to authorized person");
+                return BadRequest("Authorized person does not exist");
             }
 
+            _context.Entry(author).Collection(x => x.Lesons).Load();
+            if (!author.Lesons.Select(x => x.Id).Any(y => y == id))
+            {
+                return BadRequest("Try to modify lesson that does not belong to authorized person");
+            }
+            var lesson = await _context.Lessons.FindAsync(id);
+            if(lesson == null)
+            {
+                return BadRequest($"No lesson with id '{id}'");
+            }
+            
             _context.Lessons.Remove(lesson);
             await _context.SaveChangesAsync();
 

@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using LessonsAPI.RequestObjects;
 
 namespace LessonsAPI.Controllers
 {
@@ -41,35 +42,35 @@ namespace LessonsAPI.Controllers
 
 
         [HttpPost("reg")]
-        public async Task<ActionResult<Author>> Register(string username, string password)
+        public async Task<ActionResult<Author>> Register(AuthorRequestObject requestObject)
         {
-            if(_context.Authors.Where(x=>x.Username == username).ToListAsync().Result.IsNullOrEmpty())
+            if(_context.Authors.Where(x=>x.Username == requestObject.Username).ToListAsync().Result.IsNullOrEmpty())
             {
                 Author author = new Author();
-                author.Username = username;
-                author.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                author.Username = requestObject.Username;
+                author.PasswordHash = BCrypt.Net.BCrypt.HashPassword(requestObject.Password);
                 _context.Authors.Add(author);
                 await _context.SaveChangesAsync();
 
                 return Ok(author);
             }
-            return BadRequest($"username '{username}' already exists");
+            return BadRequest($"username '{requestObject.Username}' already exists");
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(string username, string password)
+        public async Task<ActionResult<string>> Login(AuthorRequestObject requestObject)
         {
             Author author;
             try
             {
-                author = _context.Authors.First(x => x.Username == username);
+                author = _context.Authors.First(x => x.Username == requestObject.Username);
             }
             catch (Exception ex)
             {
-                return BadRequest($"User '{username}' not found");
+                return BadRequest($"User '{requestObject.Username}' not found");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(password, author.PasswordHash))
+            if (!BCrypt.Net.BCrypt.Verify(requestObject.Password, author.PasswordHash))
             {
                 return BadRequest("Wrong password");
             }

@@ -14,8 +14,6 @@ namespace LessonsAPI.ViewModels
 
         public string? Topic { get; set; }
 
-        public bool IsCompleted { get; set; }
-
         public long AuthorId { get; set; }
 
         public List<TaskViewModel> Tasks { get; set; }
